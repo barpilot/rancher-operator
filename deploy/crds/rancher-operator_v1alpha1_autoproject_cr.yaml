@@ -1,0 +1,7 @@
+apiVersion: rancher-operator.barpilot.io/v1alpha1
+kind: AutoProject
+metadata:
+  name: example-autoproject
+spec:
+  # Add fields here
+  size: 3

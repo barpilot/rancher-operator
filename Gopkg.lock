@@ -174,6 +174,12 @@
   version = "v1.1.5"
 
 [[projects]]
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/mailru/easyjson"
   packages = [
@@ -236,6 +242,12 @@
   version = "v2.0.1"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
@@ -272,6 +284,43 @@
     "xfs"
   ]
   revision = "bbced9601137e764853b2fad7ec3e2dc4c504e02"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rancher/norman"
+  packages = [
+    "condition",
+    "controller",
+    "httperror",
+    "lifecycle",
+    "metrics",
+    "name",
+    "objectclient",
+    "objectclient/dynamic",
+    "restwatch",
+    "types",
+    "types/convert",
+    "types/definition",
+    "types/slice",
+    "types/values"
+  ]
+  revision = "a265edee9d1be1daf44670f2f8b187cc61b36c04"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rancher/types"
+  packages = [
+    "apis/management.cattle.io/v3",
+    "apis/project.cattle.io/v3",
+    "image"
+  ]
+  revision = "ee7e7deb08570aea1a6053fd492c0a7792f1b423"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -334,6 +383,12 @@
     "jwt"
   ]
   revision = "e64efc72b421e893cbf63f17ba2221e7d6d0b0f3"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  revision = "e225da77a7e68af35c70ccbf71af2b83e6acac3c"
 
 [[projects]]
   branch = "master"
@@ -492,6 +547,7 @@
     "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
+    "pkg/util/rand",
     "pkg/util/runtime",
     "pkg/util/sets",
     "pkg/util/strategicpatch",
@@ -575,7 +631,8 @@
     "util/homedir",
     "util/integer",
     "util/jsonpath",
-    "util/retry"
+    "util/retry",
+    "util/workqueue"
   ]
   revision = "d082d5923d3cc0bfbb066ee5fbdea3d0ca79acf8"
 
@@ -659,6 +716,7 @@
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
+    "pkg/runtime/scheme",
     "pkg/runtime/signals",
     "pkg/webhook/admission",
     "pkg/webhook/admission/types",
@@ -670,6 +728,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "335a14dfe540ba6b24a209e056d718a52b38b4f3a87e1b7870609f4bc5475d4e"
+  inputs-digest = "180e1f93edd81b2bcca9f8bca64d0ecf9a6002fa6f4fd92486baae2dc515dcf2"
   solver-name = "gps-cdcl"
   solver-version = 1
