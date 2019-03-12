@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"github.com/barpilot/rancher-operator/pkg/apis/rancher-operator/v1alpha1"
+	"github.com/barpilot/rancher-operator/pkg/apis/rancheroperator/v1alpha1"
 )
 
 func init() {

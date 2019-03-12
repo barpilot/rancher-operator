@@ -16,12 +16,12 @@ spec:
       containers:
         - name: rancher-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: barpilot/rancher-operator
           ports:
-          - containerPort: 60000
-            name: metrics
+            - containerPort: 60000
+              name: metrics
           command:
-          - rancher-operator
+            - rancher-operator
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

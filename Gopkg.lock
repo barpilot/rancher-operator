@@ -314,7 +314,7 @@
     "apis/project.cattle.io/v3",
     "image"
   ]
-  revision = "ee7e7deb08570aea1a6053fd492c0a7792f1b423"
+  revision = "09af2e530b5b69f1d27dccc00178118a6433e0e1"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -708,16 +708,26 @@
     "pkg/client",
     "pkg/client/apiutil",
     "pkg/client/config",
+    "pkg/controller",
+    "pkg/controller/controllerutil",
+    "pkg/event",
+    "pkg/handler",
+    "pkg/internal/controller",
+    "pkg/internal/controller/metrics",
     "pkg/internal/recorder",
     "pkg/leaderelection",
     "pkg/manager",
     "pkg/metrics",
     "pkg/patch",
+    "pkg/predicate",
+    "pkg/reconcile",
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
     "pkg/runtime/scheme",
     "pkg/runtime/signals",
+    "pkg/source",
+    "pkg/source/internal",
     "pkg/webhook/admission",
     "pkg/webhook/admission/types",
     "pkg/webhook/types"
@@ -728,6 +738,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "180e1f93edd81b2bcca9f8bca64d0ecf9a6002fa6f4fd92486baae2dc515dcf2"
+  inputs-digest = "c9b02687e3e313704e45840277da3fb55b19154b38145b8caa6eac76f3917362"
   solver-name = "gps-cdcl"
   solver-version = 1

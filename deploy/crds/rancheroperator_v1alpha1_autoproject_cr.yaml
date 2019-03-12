@@ -1,0 +1,8 @@
+apiVersion: rancheroperator.barpilot.io/v1alpha1
+kind: AutoProject
+metadata:
+  name: example-autoproject
+spec:
+  projectSpec:
+    displayName: Armateur
+    description: Project used by Platformer Team
