@@ -30,9 +30,6 @@ var log = logf.Log.WithName("controller_autoproject")
 // Add creates a new AutoProject Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	if err := managementrancherv3.AddToScheme(mgr.GetScheme()); err != nil {
-		return err
-	}
 	return add(mgr, newReconciler(mgr))
 }
 
@@ -111,6 +108,8 @@ type ReconcileAutoProject struct {
 func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Name", request.Name)
 
+	ctx := context.TODO()
+
 	// Our resource is cluster scoped
 	request.NamespacedName.Namespace = ""
 	reqLogger.Info("Reconciling AutoProject")
@@ -118,7 +117,7 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 	// Fetch the AutoProject instance
 	instance := &rancheroperatorv1alpha1.AutoProject{}
 
-	if err := r.client.Get(context.TODO(), request.NamespacedName, instance); err != nil {
+	if err := r.client.Get(ctx, request.NamespacedName, instance); err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
@@ -133,17 +132,22 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 
 	clusters := &managementrancherv3.ClusterList{}
 
-	if err := r.client.List(context.TODO(), &client.ListOptions{Namespace: ""}, clusters); err != nil {
+	opt := &client.ListOptions{}
+	opt.InNamespace("")
+
+	if err := r.client.List(ctx, opt, clusters); err != nil {
 		reqLogger.Info("Failed to list clusters")
 		return reconcile.Result{}, err
 	}
+
+	reqLogger.Info("List clusters", "clusters", clusters)
 
 	if len(clusters.Items) == 0 {
 		reqLogger.Info("empty cluster list")
 	}
 
 	for _, cluster := range clusters.Items {
-		project := newProjectForCR(instance, &cluster)
+		project := newProjectForCR(instance, cluster.Name)
 
 		reqLogger.Info("newProject return", "instance", instance, "project", project)
 
@@ -153,7 +157,7 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 		}
 
 		projects := &managementrancherv3.ProjectList{}
-		if err := r.client.List(context.TODO(), &client.ListOptions{Namespace: cluster.Name}, projects); err != nil {
+		if err := r.client.List(ctx, &client.ListOptions{Namespace: cluster.Name}, projects); err != nil {
 			reqLogger.Info("Failed to list projects")
 			return reconcile.Result{}, err
 		}
@@ -165,11 +169,9 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 			}
 		}
 
-		// err := r.client.Get(context.TODO(), types.NamespacedName{Name: project.Name, Namespace: project.Namespace}, found)
-
 		if found.Name == "" {
 			reqLogger.Info("Creating a new Project", "Project.Namespace", project.Namespace, "Project.Name", project.Name)
-			if err := r.client.Create(context.TODO(), project); err != nil {
+			if err := r.client.Create(ctx, project); err != nil {
 				return reconcile.Result{}, err
 			}
 		} else {
@@ -179,16 +181,16 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 	return reconcile.Result{}, nil
 }
 
-func newProjectForCR(cr *rancheroperatorv1alpha1.AutoProject, cluster *managementrancherv3.Cluster) *managementrancherv3.Project {
+func newProjectForCR(cr *rancheroperatorv1alpha1.AutoProject, clusterName string) *managementrancherv3.Project {
 
-	projectSpec := *cr.Spec.ProjectSpec.DeepCopy()
-	projectSpec.ClusterName = cluster.Name
+	projectSpec := cr.Spec.ProjectSpec.DeepCopy()
+	projectSpec.ClusterName = clusterName
 
 	return &managementrancherv3.Project{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace:    cluster.Name,
+			Namespace:    clusterName,
 			GenerateName: "p-",
 		},
-		Spec: projectSpec,
+		Spec: *projectSpec,
 	}
 }

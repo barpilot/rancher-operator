@@ -14,7 +14,7 @@ type AutoProjectSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 
-	ProjectSpec *rancherv3.ProjectSpec `json:"projectSpec`
+	ProjectSpec rancherv3.ProjectSpec `json:"projectSpec"`
 }
 
 // AutoProjectStatus defines the observed state of AutoProject
