@@ -30,6 +30,9 @@ var log = logf.Log.WithName("controller_autoproject")
 // Add creates a new AutoProject Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
+	if err := managementrancherv3.AddToScheme(mgr.GetScheme()); err != nil {
+		return err
+	}
 	return add(mgr, newReconciler(mgr))
 }
 
@@ -60,18 +63,26 @@ func add(mgr manager.Manager, r *ReconcileAutoProject) error {
 			apps := []reconcile.Request{}
 
 			autoProjects := &rancheroperatorv1alpha1.AutoProjectList{}
-			err := r.client.List(context.TODO(), &client.ListOptions{}, autoProjects)
+			err := r.client.List(context.TODO(), &client.ListOptions{Namespace: ""}, autoProjects)
 			if err != nil {
 				return apps
 			}
 			for _, app := range autoProjects.Items {
 				apps = append(apps, reconcile.Request{NamespacedName: types.NamespacedName{
 					Name:      app.Name,
-					Namespace: app.Namespace,
+					Namespace: "",
 				}})
 			}
 			return apps
 		}),
+	})
+	if err != nil {
+		return err
+	}
+
+	err = c.Watch(&source.Kind{Type: &managementrancherv3.Project{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &rancheroperatorv1alpha1.AutoProject{},
 	})
 	if err != nil {
 		return err
@@ -98,7 +109,10 @@ type ReconcileAutoProject struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	reqLogger := log.WithValues("Request.Name", request.Name)
+
+	// Our resource is cluster scoped
+	request.NamespacedName.Namespace = ""
 	reqLogger.Info("Reconciling AutoProject")
 
 	// Fetch the AutoProject instance
@@ -109,72 +123,65 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
+			reqLogger.Info("Failed to get instance")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		reqLogger.Info("Failed to get instance")
 		return reconcile.Result{}, err
 	}
 
 	clusters := &managementrancherv3.ClusterList{}
 
-	if err := r.client.List(context.TODO(), &client.ListOptions{Namespace: "rancher"}, clusters); err != nil {
+	if err := r.client.List(context.TODO(), &client.ListOptions{Namespace: ""}, clusters); err != nil {
+		reqLogger.Info("Failed to list clusters")
 		return reconcile.Result{}, err
+	}
+
+	if len(clusters.Items) == 0 {
+		reqLogger.Info("empty cluster list")
 	}
 
 	for _, cluster := range clusters.Items {
 		project := newProjectForCR(instance, &cluster)
 
+		reqLogger.Info("newProject return", "instance", instance, "project", project)
+
 		if err := controllerutil.SetControllerReference(instance, project, r.scheme); err != nil {
+			reqLogger.Info("Failed to ser owner")
+			return reconcile.Result{}, err
+		}
+
+		projects := &managementrancherv3.ProjectList{}
+		if err := r.client.List(context.TODO(), &client.ListOptions{Namespace: cluster.Name}, projects); err != nil {
+			reqLogger.Info("Failed to list projects")
 			return reconcile.Result{}, err
 		}
 
 		found := &managementrancherv3.Project{}
-		err := r.client.Get(context.TODO(), types.NamespacedName{Name: project.Name, Namespace: project.Namespace}, found)
+		for _, p := range projects.Items {
+			if p.Spec.DisplayName == instance.Spec.ProjectSpec.DisplayName {
+				found = &p
+			}
+		}
 
-		if err != nil && errors.IsNotFound(err) {
+		// err := r.client.Get(context.TODO(), types.NamespacedName{Name: project.Name, Namespace: project.Namespace}, found)
+
+		if found.Name == "" {
 			reqLogger.Info("Creating a new Project", "Project.Namespace", project.Namespace, "Project.Name", project.Name)
 			if err := r.client.Create(context.TODO(), project); err != nil {
 				return reconcile.Result{}, err
 			}
-		} else if err != nil {
-			return reconcile.Result{}, err
 		} else {
 			reqLogger.Info("Skip reconcile: Project already exists", "Project.Namespace", found.Namespace, "Project.Name", found.Name)
 		}
 	}
-
-	// // Define a new Pod object
-	// pod := newPodForCR(instance)
-
-	// // Set AutoProject instance as the owner and controller
-	// if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-	// 	return reconcile.Result{}, err
-	// }
-
-	// // Check if this Pod already exists
-	// found := &corev1.Pod{}
-	// err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
-	// if err != nil && errors.IsNotFound(err) {
-	// 	reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
-	// 	err = r.client.Create(context.TODO(), pod)
-	// 	if err != nil {
-	// 		return reconcile.Result{}, err
-	// 	}
-
-	// 	// Pod created successfully - don't requeue
-	// 	return reconcile.Result{}, nil
-	// } else if err != nil {
-	// 	return reconcile.Result{}, err
-	// }
-
-	// Pod already exists - don't requeue
-	// reqLogger.Info("Skip reconcile: Pod already exists", "Project.Namespace", found.Namespace, "Pod.Name", found.Name)
 	return reconcile.Result{}, nil
 }
 
 func newProjectForCR(cr *rancheroperatorv1alpha1.AutoProject, cluster *managementrancherv3.Cluster) *managementrancherv3.Project {
 
-	projectSpec := cr.Spec.ProjectSpec
+	projectSpec := *cr.Spec.ProjectSpec.DeepCopy()
 	projectSpec.ClusterName = cluster.Name
 
 	return &managementrancherv3.Project{
