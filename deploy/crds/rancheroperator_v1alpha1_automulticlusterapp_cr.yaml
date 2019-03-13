@@ -1,0 +1,7 @@
+apiVersion: rancheroperator.barpilot.io/v1alpha1
+kind: AutoMultiClusterApp
+metadata:
+  name: example-automulticlusterapp
+spec:
+  multiClusterApp: cert-manager
+  projectSelector: "autoproject/displayname==Armateur"
