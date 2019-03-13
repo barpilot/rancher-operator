@@ -149,33 +149,31 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 	for _, cluster := range clusters.Items {
 		project := newProjectForCR(instance, cluster.Name)
 
-		reqLogger.Info("newProject return", "instance", instance, "project", project)
-
 		if err := controllerutil.SetControllerReference(instance, project, r.scheme); err != nil {
 			reqLogger.Info("Failed to ser owner")
 			return reconcile.Result{}, err
 		}
 
 		projects := &managementrancherv3.ProjectList{}
-		if err := r.client.List(ctx, &client.ListOptions{Namespace: cluster.Name}, projects); err != nil {
+
+		opt := &client.ListOptions{}
+		opt.InNamespace(cluster.Name)
+		opt.MatchingLabels(map[string]string{"autoproject/displayname": instance.Spec.ProjectSpec.DisplayName})
+
+		if err := r.client.List(ctx, opt, projects); err != nil {
 			reqLogger.Info("Failed to list projects")
 			return reconcile.Result{}, err
 		}
 
-		found := &managementrancherv3.Project{}
-		for _, p := range projects.Items {
-			if p.Spec.DisplayName == instance.Spec.ProjectSpec.DisplayName {
-				found = &p
-			}
-		}
-
-		if found.Name == "" {
+		if len(projects.Items) == 0 {
 			reqLogger.Info("Creating a new Project", "Project.Namespace", project.Namespace, "Project.Name", project.Name)
 			if err := r.client.Create(ctx, project); err != nil {
 				return reconcile.Result{}, err
 			}
+		} else if len(projects.Items) == 1 {
+			reqLogger.Info("Skip reconcile: Project already exists", "Project.Namespace", projects.Items[0].Namespace, "Project.Name", projects.Items[0].Name)
 		} else {
-			reqLogger.Info("Skip reconcile: Project already exists", "Project.Namespace", found.Namespace, "Project.Name", found.Name)
+			reqLogger.Info("! Skip reconcile: multiple Projects already exists!")
 		}
 	}
 	return reconcile.Result{}, nil
@@ -190,6 +188,9 @@ func newProjectForCR(cr *rancheroperatorv1alpha1.AutoProject, clusterName string
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:    clusterName,
 			GenerateName: "p-",
+			Labels: map[string]string{
+				"autoproject/displayname": projectSpec.DisplayName,
+			},
 		},
 		Spec: *projectSpec,
 	}

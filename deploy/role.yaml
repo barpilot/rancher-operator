@@ -39,15 +39,10 @@ rules:
       - get
       - create
   - apiGroups:
-      - rancher-operator.barpilot.io
-    resources:
-      - "*"
-    verbs:
-      - "*"
-  - apiGroups:
       - rancheroperator.barpilot.io
     resources:
-      - "*"
+      - autoprojects
+      - automulticlusterapps
     verbs:
       - "*"
   - apiGroups:
