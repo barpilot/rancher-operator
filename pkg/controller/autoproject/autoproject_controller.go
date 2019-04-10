@@ -140,8 +140,6 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info("List clusters", "clusters", clusters)
-
 	if len(clusters.Items) == 0 {
 		reqLogger.Info("empty cluster list")
 	}

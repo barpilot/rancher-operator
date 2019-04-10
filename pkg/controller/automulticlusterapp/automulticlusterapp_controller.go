@@ -159,8 +159,6 @@ func (r *ReconcileAutoMultiClusterApp) Reconcile(request reconcile.Request) (rec
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info("List projects", "clusters", projects)
-
 	// Check if this Pod already exists
 	found := &managementrancherv3.MultiClusterApp{}
 	err = r.client.Get(ctx, types.NamespacedName{Name: instance.Spec.MultiClusterApp, Namespace: RancherGlobalNamespace}, found)
@@ -192,8 +190,4 @@ func (r *ReconcileAutoMultiClusterApp) Reconcile(request reconcile.Request) (rec
 		reqLogger.Info("multiClusterApp doesn't exists", "App", instance.Spec.MultiClusterApp)
 	}
 	return reconcile.Result{}, err
-
-	// // Pod already exists - don't requeue
-	// reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
-	// return reconcile.Result{}, nil
 }
