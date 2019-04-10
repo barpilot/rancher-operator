@@ -307,14 +307,15 @@
   revision = "a265edee9d1be1daf44670f2f8b187cc61b36c04"
 
 [[projects]]
-  branch = "master"
+  branch = "norman-update"
   name = "github.com/rancher/types"
   packages = [
     "apis/management.cattle.io/v3",
     "apis/project.cattle.io/v3",
     "image"
   ]
-  revision = "09af2e530b5b69f1d27dccc00178118a6433e0e1"
+  revision = "605578d14ebbd0c1e450344a929636093b2acb74"
+  source = "https://github.com/barpilot/rancher-types.git"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -738,6 +739,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c9b02687e3e313704e45840277da3fb55b19154b38145b8caa6eac76f3917362"
+  inputs-digest = "ef16c07cee3c4d58fd396ec702218b094620bd5adadb961951b1544ee86469a1"
   solver-name = "gps-cdcl"
   solver-version = 1
