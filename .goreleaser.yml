@@ -1,0 +1,42 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+builds:
+- main: ./cmd/manager/
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  goarch:
+  - amd64
+  - arm64
+archive:
+  format: binary
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+release:
+  prerelease: auto
+dockers:
+  - goos: linux
+    goarch: amd64
+    goarm: ''
+    binaries:
+    - rancher-operator
+    image_templates:
+    - "barpilot/{{.ProjectName}}:latest"
+    - "barpilot/{{.ProjectName}}:{{ .Tag }}"
+    - "barpilot/{{.ProjectName}}:v{{ .Major }}"
+    dockerfile: Dockerfile.release
