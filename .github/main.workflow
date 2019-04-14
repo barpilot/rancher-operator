@@ -18,3 +18,14 @@ action "goreleaser" {
   args = "release"
   needs = ["is-tag"]
 }
+
+workflow "linter" {
+  on = "push"
+  resolves = ["golangci-lint"]
+}
+
+action "golangci-lint" {
+  uses = "docker://golangci/golangci-lint:v1.16"
+  args = "run --deadline=55m"
+  runs = "golangci-lint"
+}
