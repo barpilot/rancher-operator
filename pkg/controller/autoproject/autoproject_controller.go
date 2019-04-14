@@ -155,14 +155,15 @@ func (r *ReconcileAutoProject) Reconcile(request reconcile.Request) (reconcile.R
 			return reconcile.Result{}, err
 		}
 
-		if len(projects.Items) == 0 {
+		switch len(projects.Items) {
+		case 0:
 			reqLogger.Info("Creating a new Project", "Project.Namespace", project.Namespace, "Project.Name", project.Name)
 			if err := r.client.Create(ctx, project); err != nil {
 				return reconcile.Result{}, err
 			}
-		} else if len(projects.Items) == 1 {
+		case 1:
 			reqLogger.Info("Skip reconcile: Project already exists", "Project.Namespace", projects.Items[0].Namespace, "Project.Name", projects.Items[0].Name)
-		} else {
+		default:
 			reqLogger.Info("! Skip reconcile: multiple Projects already exists!")
 		}
 	}
