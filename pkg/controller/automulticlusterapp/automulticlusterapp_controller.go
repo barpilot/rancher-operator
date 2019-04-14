@@ -140,7 +140,9 @@ func (r *ReconcileAutoMultiClusterApp) Reconcile(request reconcile.Request) (rec
 
 	opt := &client.ListOptions{}
 	opt.InNamespace("")
-	opt.SetLabelSelector(instance.Spec.ProjectSelector)
+	if err := opt.SetLabelSelector(instance.Spec.ProjectSelector); err != nil {
+		return reconcile.Result{}, err
+	}
 
 	if err := r.client.List(ctx, opt, projects); err != nil {
 		reqLogger.Info("Failed to list projects")
