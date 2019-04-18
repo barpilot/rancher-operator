@@ -1,0 +1,7 @@
+apiVersion: rancheroperator.barpilot.io/v1alpha1
+kind: AutoClusterEdit
+metadata:
+  name: example-autoclusteredit
+spec:
+  # Add fields here
+  size: 3

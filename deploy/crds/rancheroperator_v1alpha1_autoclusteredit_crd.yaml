@@ -1,0 +1,15 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: autoclusteredits.rancheroperator.barpilot.io
+spec:
+  group: rancheroperator.barpilot.io
+  names:
+    kind: AutoClusterEdit
+    listKind: AutoClusterEditList
+    plural: autoclusteredits
+    singular: autoclusteredit
+  scope: Namespaced
+  version: v1alpha1
+  subresources:
+    status: {}

@@ -35,6 +35,24 @@ spec:
 
 Multi-Cluster App should already exists.
 
+### AutoClusterEdit
+
+
+```yaml
+apiVersion: rancheroperator.barpilot.io/v1alpha1
+kind: AutoClusterEdit
+metadata:
+  name: add-tag
+spec:
+  clusterSelector: "cattle.io/creator==norman"
+  clusterTemplate:
+    metadata:
+      labels:
+        env: prod
+    spec:
+      description: "modified cluster"
+```
+
 ## Status: _ALPHA_
 
 Use it after tests and coffee.
@@ -55,3 +73,17 @@ A Kubernetes as a Service Team can add some default features to a cluster:
   - cert-manager
 
 This add value to user with default "working" configuration.
+
+## Developpement
+
+``` sh
+PROJECT_PACKAGE=github.com/barpilot/rancher-operator && \
+docker run -it --rm \
+    -v ${PWD}:/go/src/${PROJECT_PACKAGE}\
+    -e PROJECT_PACKAGE=${PROJECT_PACKAGE} \
+    -e CLIENT_GENERATOR_OUT=${PROJECT_PACKAGE}/pkg/client \
+    -e APIS_ROOT=${PROJECT_PACKAGE}/pkg/apis \
+    -e GROUPS_VERSION="rancheroperator:v1alpha1" \
+    -e GENERATION_TARGETS="deepcopy" \
+    quay.io/slok/kube-code-generator
+```
